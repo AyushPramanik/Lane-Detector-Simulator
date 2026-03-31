@@ -30,12 +30,15 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
+            extra_cmake_flags: -DCMAKE_TOOLCHAIN_FILE=C:/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_TARGET_TRIPLET=x64-windows
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
+            extra_cmake_flags: ""
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
+            extra_cmake_flags: ""
         exclude:
           - os: windows-latest
             c_compiler: gcc
@@ -46,6 +49,23 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install OpenCV (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libopencv-dev
+
+    - name: Cache vcpkg packages (Windows)
+      if: runner.os == 'Windows'
+      uses: actions/cache@v4
+      with:
+        path: C:/vcpkg/installed
+        key: vcpkg-opencv4-x64-windows
+
+    - name: Install OpenCV via vcpkg (Windows)
+      if: runner.os == 'Windows'
+      run: vcpkg install opencv4:x64-windows
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -62,6 +82,7 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        ${{ matrix.extra_cmake_flags }}
         -S ${{ github.workspace }}
 
     - name: Build
@@ -72,4 +93,4 @@ jobs:
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
       # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest --build-config ${{ matrix.build_type }}
+      run: ctest --build-config ${{ matrix.build_type }} --no-tests=ignore
