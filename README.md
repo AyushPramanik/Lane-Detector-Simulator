@@ -126,6 +126,12 @@ The compiled binary is `build/lane_detector`.
 ./lane_detector --video road.mp4
 ```
 
+### Sample videos
+```bash
+./lane_detector --video videos/solidWhiteRight.mp4
+./lane_detector --video videos/solidYellowLeft.mp4
+```
+
 ### Webcam
 ```bash
 ./lane_detector --webcam

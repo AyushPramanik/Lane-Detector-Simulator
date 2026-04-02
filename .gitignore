@@ -27,6 +27,8 @@ lane_detector
 *~
 .DS_Store
 
+# Input videos
+videos/
 # Output videos
 output.avi
 *.avi
